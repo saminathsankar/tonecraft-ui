@@ -25,44 +25,27 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
+            "styles": ["src/styles.css"],
+            "outputMode": "static",
             "security": {
               "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
             }
           },
           "configurations": {
             "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
-              ],
+              "optimization": true,
               "outputHashing": "all"
             },
             "development": {
               "optimization": false,
-              "extractLicenses": false,
               "sourceMap": true
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "development"
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {},
           "configurations": {
             "production": {
               "buildTarget": "tonecraft-UI:build:production"
