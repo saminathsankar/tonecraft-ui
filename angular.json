@@ -29,7 +29,9 @@
             "outputMode": "static",
             "security": {
               "allowedHosts": []
-            }
+            },
+            "allowedCommonJsDependencies": ["url", "crypto", "path", "fs", "zlib", "os"],
+            "externalDependencies": ["url"]
           },
           "configurations": {
             "production": {
