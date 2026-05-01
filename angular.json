@@ -30,7 +30,7 @@
             "security": {
               "allowedHosts": []
             },
-            "allowedCommonJsDependencies": ["url", "crypto", "path", "fs", "zlib", "os"],
+            "allowedCommonJsDependencies": ["url", "crypto", "path", "fs", "zlib", "os", "buffer"],
             "externalDependencies": ["url"]
           },
           "configurations": {

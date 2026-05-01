@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone } from '@angular/core';
+import { Component, HostListener, NgZone, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
@@ -22,8 +22,7 @@ export class App {
   showRestrictedPopup = false;
   private engine: MLCEngine | null = null;
   private blockedWords = ['sex', 'porn', 'xxx', 'fuck', 'shit', 'ass', 'bitch', 'nude', 'naked', 'explicit', 'adult', 'bastard', 'dick', 'pussy', 'anal', 'hentai'];
-  private autoGenerateTimer: any = null;
-
+  private isGenerating = false;
   private formatKeywords: Record<string, string[]> = {
     letter: ['letter', 'formal letter', 'business letter', 'cover letter'],
     email: ['email', 'mail', 'e-mail'],
@@ -42,7 +41,7 @@ export class App {
     return 'general';
   }
 
-  constructor(private zone: NgZone) {}
+  constructor(private zone: NgZone, private cdr: ChangeDetectorRef) {}
 
   isContentAppropriate(text: string): boolean {
     const lower = text.toLowerCase();
@@ -81,24 +80,26 @@ export class App {
 
     this.loading = true;
     this.results = [];
+    this.isGenerating = true;
+    this.cdr.detectChanges();
 
     const detectedFormat = this.detectFormat(this.inputText);
 
     const formatPrompts: Record<string, string> = {
-      letter: 'Rewrite this as a complete letter with greeting, body paragraphs, and sign-off.',
-      email: 'Rewrite this as a professional email with subject, greeting, body, and sign-off.',
-      teams: 'Rewrite this as a concise Microsoft Teams message.',
-      slack: 'Rewrite this as a casual Slack message.',
-      chat: 'Rewrite this as a short, clear chat message.',
-      social: 'Rewrite this as a polished social media post.',
-      presentation: 'Rewrite this as bullet points for a presentation slide.',
-      general: 'Rewrite and enhance this text to make it clearer and more impactful.',
+      letter: 'Rewrite as a formal letter with greeting and sign-off.',
+      email: 'Rewrite as a professional email with subject and greeting.',
+      teams: 'Rewrite as a concise Teams message.',
+      slack: 'Rewrite as a casual Slack message.',
+      chat: 'Rewrite as a short chat message.',
+      social: 'Rewrite as a polished social media post.',
+      presentation: 'Rewrite as presentation bullet points.',
+      general: 'Improve clarity and impact.',
     };
 
     const toneAdjectives: Record<string, string[]> = {
-      Professional: ['professional', 'formal', 'business-appropriate'],
-      Friendly: ['warm', 'friendly', 'approachable'],
-      Polite: ['courteous', 'respectful', 'polite'],
+      Professional: ['professional', 'formal'],
+      Friendly: ['warm', 'friendly'],
+      Polite: ['courteous', 'polite'],
     };
 
     const tones = Object.keys(toneAdjectives);
@@ -111,16 +112,17 @@ export class App {
           text: '',
         };
         this.results = [...this.results, result];
+        this.cdr.detectChanges();
 
-        const adjectives = toneAdjectives[toneConfig as keyof typeof toneAdjectives].join(', ');
+        const adjectives = toneAdjectives[toneConfig as keyof typeof toneAdjectives].join(' ');
         const formatPrompt = formatPrompts[detectedFormat];
 
         const stream = await this.engine!.chat.completions.create({
           messages: [
-            { role: 'system', content: `${formatPrompt} Use a ${adjectives} tone. Preserve the original meaning. Output only the rewritten text.` },
+            { role: 'system', content: `You are a text-only writing assistant. ${formatPrompt} Use a ${adjectives} tone. Do NOT output errors, do NOT mention 'clipboard' or images. Output only the rewritten text.` },
             { role: 'user', content: this.inputText },
           ],
-          max_tokens: 256,
+          max_tokens: 100,
           temperature: 0.7,
           stream: true,
         });
@@ -129,8 +131,12 @@ export class App {
           const content = chunk.choices[0]?.delta?.content;
           if (content) {
             result.text += content;
-            this.results = [...this.results];
+            this.cdr.detectChanges();
           }
+        }
+
+        if (result.text.toLowerCase().includes('clipboard') || result.text.toLowerCase().includes('error:')) {
+          result.text = 'Failed to generate. Please try again.';
         }
       }
     } catch (error) {
@@ -139,22 +145,8 @@ export class App {
     }
 
     this.loading = false;
-  }
-
-  onInputChange() {
-    if (this.autoGenerateTimer) {
-      clearTimeout(this.autoGenerateTimer);
-    }
-    if (!this.inputText.trim()) {
-      this.results = [];
-      return;
-    }
-    this.autoGenerateTimer = setTimeout(() => {
-      if (!this.isContentAppropriate(this.inputText)) {
-        return;
-      }
-      this.handleGenerate();
-    }, 1500);
+    this.isGenerating = false;
+    this.cdr.detectChanges();
   }
 
   async handleGenerate() {
