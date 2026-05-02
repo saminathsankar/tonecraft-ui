@@ -20,9 +20,14 @@ export class App {
   selectedResult: any = null;
   filterTone = 'All';
   showRestrictedPopup = false;
+  showSplash = true;
   private engine: MLCEngine | null = null;
   private blockedWords = ['sex', 'porn', 'xxx', 'fuck', 'shit', 'ass', 'bitch', 'nude', 'naked', 'explicit', 'adult', 'bastard', 'dick', 'pussy', 'anal', 'hentai'];
   private isGenerating = false;
+
+  ngOnInit() {
+    setTimeout(() => this.showSplash = false, 5000);
+  }
   private formatKeywords: Record<string, string[]> = {
     letter: ['letter', 'formal letter', 'business letter', 'cover letter'],
     email: ['email', 'mail', 'e-mail'],

@@ -1,10 +1,50 @@
+<!-- Splash Screen Intro -->
+<div *ngIf="showSplash" class="fixed inset-0 z-[100] bg-slate-950 flex flex-col items-center justify-center" (click)="showSplash = false">
+  <div class="flex flex-col items-center gap-4 animate-titleSlide">
+    <svg class="w-20 h-20 mb-2 drop-shadow-lg shadow-indigo-500/20" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#6D5BFF" />
+          <stop offset="100%" stop-color="#A66CFF" />
+        </linearGradient>
+      </defs>
+      <rect x="16" y="16" width="480" height="480" rx="110" fill="url(#bgGradient)" />
+      <rect x="136" y="160" width="240" height="40" rx="20" fill="white" />
+      <rect x="236" y="160" width="40" height="200" rx="20" fill="white" />
+    </svg>
+    <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-400 tracking-wide">
+      ToneCraft AI
+    </h1>
+    <p class="text-lg text-slate-400 font-medium tracking-wider mt-2">
+      Simplifying &bull; Creativity &bull; Effortlessly
+    </p>
+  </div>
+  <div class="mt-12 animate-pulse text-indigo-500/50 text-xs">
+    Initializing AI...
+  </div>
+</div>
+
 <div class="h-screen flex flex-col bg-slate-950 text-gray-100">
   <!-- Header -->
   <header
     class="flex justify-between items-center px-10 py-4 border-b shadow-sm sticky top-0 z-10 bg-slate-900 border-slate-700"
   >
     <div class="flex items-center gap-2">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-500"></div>
+      <svg width="35" height="35" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6D5BFF" />
+            <stop offset="100%" stop-color="#A66CFF" />
+          </linearGradient>
+        </defs>
+
+        <!-- Background -->
+        <rect x="16" y="16" width="480" height="480" rx="110" fill="url(#bgGradient)" />
+
+        <!-- T Shape -->
+        <rect x="136" y="160" width="240" height="40" rx="20" fill="white" />
+        <rect x="236" y="160" width="40" height="200" rx="20" fill="white" />
+      </svg>
       <h1 class="text-lg font-semibold text-gray-100">ToneCraft AI</h1>
     </div>
     <div class="flex items-center gap-4">
@@ -182,7 +222,7 @@
   <!-- Footer -->
   <footer class="text-center py-6 text-sm text-gray-400">
     <div class="mt-3 text-xs text-gray-500">
-      © 2026 ToneCraft AI · Open Source under MIT License
+      © 2026 ToneCraft AI · Simplifying | Creativity | Effortlessly
     </div>
   </footer>
 </div>
