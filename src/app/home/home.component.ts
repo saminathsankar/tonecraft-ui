@@ -45,7 +45,7 @@ export class HomeComponent {
     private cdr: ChangeDetectorRef,
     private userCountService: UserCountService,
   ) {
-    const submitted = localStorage.getItem('tc_name_submitted');
+    const submitted = localStorage.getItem('tc_name_submitted_v2');
     this.showNameEntry = !submitted;
   }
 
@@ -196,7 +196,7 @@ export class HomeComponent {
       this.showNamePopup = true;
       this.cdr.detectChanges();
     }, 2000);
-    try { localStorage.setItem('tc_name_submitted', '1'); } catch {}
+    try { localStorage.setItem('tc_name_submitted_v2', '1'); } catch {}
   }
 
   dismissNamePopup() {

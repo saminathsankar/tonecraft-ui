@@ -14,6 +14,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   liveCount = 0;
   displayedCount = 0;
   isDev = isDevMode();
+  showResetConfirm = false;
   private sub?: Subscription;
   private animFrame?: number;
 
@@ -56,9 +57,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   resetCount() {
+    this.showResetConfirm = true;
+  }
+
+  confirmReset() {
+    this.showResetConfirm = false;
     this.userCountService.reset();
     this.liveCount = 0;
     this.displayedCount = 0;
+  }
+
+  cancelReset() {
+    this.showResetConfirm = false;
   }
 
   goHome() {
