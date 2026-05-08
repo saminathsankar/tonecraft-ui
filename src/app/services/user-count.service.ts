@@ -32,4 +32,9 @@ export class UserCountService {
   get currentCount(): number {
     return this.countSource.value;
   }
+
+  reset() {
+    this.countSource.next(0);
+    this.saveCount(0);
+  }
 }

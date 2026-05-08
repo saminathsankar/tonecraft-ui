@@ -13,6 +13,7 @@ import { Subscription } from 'rxjs';
 export class DashboardComponent implements OnInit, OnDestroy {
   liveCount = 0;
   displayedCount = 0;
+  isDev = isDevMode();
   private sub?: Subscription;
   private animFrame?: number;
 
@@ -27,10 +28,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
     this.liveCount = this.userCountService.currentCount;
-    this.animateCountUp();
+    this.displayedCount = this.liveCount;
     this.sub = this.userCountService.count$.subscribe(count => {
       this.liveCount = count;
-      if (this.displayedCount < count) {
+      if (this.displayedCount !== count) {
         this.animateCountUp();
       }
     });
@@ -52,6 +53,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
     };
     this.animFrame = requestAnimationFrame(step);
+  }
+
+  resetCount() {
+    this.userCountService.reset();
+    this.liveCount = 0;
+    this.displayedCount = 0;
   }
 
   goHome() {

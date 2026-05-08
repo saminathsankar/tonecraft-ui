@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, NgZone, ChangeDetectorRef, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
@@ -34,19 +34,16 @@ export class HomeComponent {
     presentation: ['presentation', 'slide', 'bullet point'],
   };
 
-  showNameEntry = true;
-  showNameAnimation = false;
-  showNamePopup = false;
-  nameInput = '';
-  userNumber = 0;
-
   constructor(
     private zone: NgZone,
     private cdr: ChangeDetectorRef,
     private userCountService: UserCountService,
-  ) {
-    const submitted = sessionStorage.getItem('tc_name_submitted');
-    this.showNameEntry = !submitted;
+  ) {}
+
+  ngOnInit() {
+    if (!isDevMode()) {
+      this.userCountService.increment();
+    }
   }
 
   detectFormat(text: string): string {
@@ -180,28 +177,6 @@ export class HomeComponent {
 
   onFilterMouseEnter(event: MouseEvent) { (event.target as HTMLElement).style.backgroundColor = '#0f172a'; }
   onFilterMouseLeave(event: MouseEvent) { (event.target as HTMLElement).style.backgroundColor = 'transparent'; }
-
-  submitName() {
-    const name = this.nameInput.trim();
-    if (!name) return;
-    this.userNumber = this.userCountService.increment();
-    this.showNameEntry = false;
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.showNameAnimation = true;
-      this.cdr.detectChanges();
-    }, 50);
-    setTimeout(() => {
-      this.showNameAnimation = false;
-      this.showNamePopup = true;
-      this.cdr.detectChanges();
-    }, 2000);
-    try { sessionStorage.setItem('tc_name_submitted', '1'); } catch {}
-  }
-
-  dismissNamePopup() {
-    this.showNamePopup = false;
-  }
 
   @HostListener('document:click', ['$event'])
   onClickOutside(event: Event) {

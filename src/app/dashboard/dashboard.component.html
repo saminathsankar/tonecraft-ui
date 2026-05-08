@@ -84,6 +84,15 @@
       >
         Back to Home
       </button>
+
+      <!-- Reset Button (dev only) -->
+      <button
+        *ngIf="isDev"
+        (click)="resetCount()"
+        class="mt-4 px-6 py-2 rounded-xl text-sm text-slate-400 border border-slate-600/50 hover:bg-slate-800/50 hover:text-red-400 hover:border-red-400/30 transition-all duration-200"
+      >
+        Reset Counter
+      </button>
     </div>
   </div>
 </div>
