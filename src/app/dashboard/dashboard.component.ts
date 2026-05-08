@@ -24,6 +24,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    if (!isDevMode()) {
+      this.router.navigate(['/']);
+      return;
+    }
     this.liveCount = this.userCountService.currentCount;
     this.displayedCount = this.liveCount;
     this.sub = this.userCountService.count$.subscribe(count => {
