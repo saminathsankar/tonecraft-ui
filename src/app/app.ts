@@ -1,6 +1,6 @@
 import { Component, HostListener, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, Router } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
@@ -10,16 +10,9 @@ import { RouterOutlet, Router } from '@angular/router';
 })
 export class App {
   showSplash = true;
-  isDev = isDevMode();
-
-  constructor(private router: Router) {}
 
   ngOnInit() {
     setTimeout(() => this.showSplash = false, 5000);
-  }
-
-  goToDashboard() {
-    this.router.navigate(['/dashboard']);
   }
 
   @HostListener('document:contextmenu', ['$event'])
