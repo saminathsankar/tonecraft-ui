@@ -1,4 +1,4 @@
-import { Component, HostListener, NgZone, ChangeDetectorRef } from '@angular/core';
+import { Component, HostListener, NgZone, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CreateMLCEngine, type MLCEngine } from '@mlc-ai/web-llm';
@@ -9,8 +9,9 @@ import { UserCountService } from '../services/user-count.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './home.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HomeComponent {
+export class HomeComponent implements OnDestroy {
   inputText = '';
   activeDropdown: string | null = null;
   loading = false;
@@ -18,6 +19,7 @@ export class HomeComponent {
   modelProgress = 0;
   modelLoaded = false;
   results: any[] = [];
+  filteredResults: any[] = [];
   selectedResult: any = null;
   filterTone = 'All';
   showRestrictedPopup = false;
@@ -83,6 +85,7 @@ export class HomeComponent {
       console.error('Failed to load AI model:', error);
       this.modelLoading = false;
       this.results = [{ title: 'Error', text: 'Failed to load AI model. Check browser console for details.' }];
+      this.updateFilteredResults();
     }
   }
 
@@ -90,8 +93,8 @@ export class HomeComponent {
     if (!this.inputText || !this.engine) return;
     this.loading = true;
     this.results = [];
+    this.filteredResults = [];
     this.isGenerating = true;
-    this.cdr.detectChanges();
     const detectedFormat = this.detectFormat(this.inputText);
     const formatPrompts: Record<string, string> = {
       letter: 'Rewrite as a formal letter with greeting and sign-off.',
@@ -112,9 +115,11 @@ export class HomeComponent {
     const filteredTones = this.filterTone === 'All' ? tones : tones.filter(t => t === this.filterTone);
     try {
       for (const toneConfig of filteredTones) {
+        if (!this.isGenerating) break;
         const result = { title: toneConfig + ' Version', text: '' };
-        this.results = [...this.results, result];
-        this.cdr.detectChanges();
+        this.results.push(result);
+        this.updateFilteredResults();
+        this.cdr.markForCheck();
         const adjectives = toneAdjectives[toneConfig as keyof typeof toneAdjectives].join(' ');
         const formatPrompt = formatPrompts[detectedFormat];
         const stream = await this.engine!.chat.completions.create({
@@ -122,28 +127,34 @@ export class HomeComponent {
             { role: 'system', content: `You are a text-only writing assistant. ${formatPrompt} Use a ${adjectives} tone. Do NOT output errors, do NOT mention 'clipboard' or images. Output only the rewritten text.` },
             { role: 'user', content: this.inputText },
           ],
-          max_tokens: 100,
+          max_tokens: 500,
           temperature: 0.7,
           stream: true,
         });
         for await (const chunk of stream as AsyncIterable<{ choices: Array<{ delta: { content?: string } }> }>) {
+          if (!this.isGenerating) break;
           const content = chunk.choices[0]?.delta?.content;
           if (content) {
             result.text += content;
-            this.cdr.detectChanges();
+            this.cdr.markForCheck();
           }
         }
-        if (result.text.toLowerCase().includes('clipboard') || result.text.toLowerCase().includes('error:')) {
+        if (!this.isGenerating) break;
+        if (/^error:/i.test(result.text.trim())) {
           result.text = 'Failed to generate. Please try again.';
         }
+        this.updateFilteredResults();
+        this.cdr.markForCheck();
       }
     } catch (error) {
       console.error('Generation failed:', error);
       this.results = [{ title: 'Error', text: 'Failed to generate. Please try again.' }];
+      this.updateFilteredResults();
     }
     this.loading = false;
     this.isGenerating = false;
-    this.cdr.detectChanges();
+    this.updateFilteredResults();
+    this.cdr.markForCheck();
   }
 
   async handleGenerate() {
@@ -171,11 +182,21 @@ export class HomeComponent {
   closePopup() { this.selectedResult = null; }
   closeRestrictedPopup() { this.showRestrictedPopup = false; }
   toggleDropdown(name: string) { this.activeDropdown = this.activeDropdown === name ? null : name; }
-  selectFilter(filter: string) { this.filterTone = filter; this.activeDropdown = null; }
 
-  getFilteredResults() {
-    if (this.filterTone === 'All') return this.results;
-    return this.results.filter((r) => r.title.includes(this.filterTone));
+  selectFilter(filter: string) {
+    this.filterTone = filter;
+    this.activeDropdown = null;
+    this.updateFilteredResults();
+  }
+
+  private updateFilteredResults() {
+    this.filteredResults = this.filterTone === 'All'
+      ? this.results
+      : this.results.filter((r) => r.title.includes(this.filterTone));
+  }
+
+  trackByResult(index: number, result: any) {
+    return result.title;
   }
 
   onFilterMouseEnter(event: MouseEvent) { (event.target as HTMLElement).style.backgroundColor = '#0f172a'; }
@@ -186,21 +207,25 @@ export class HomeComponent {
     if (!name) return;
     this.userNumber = this.userCountService.increment();
     this.showNameEntry = false;
-    this.cdr.detectChanges();
     setTimeout(() => {
       this.showNameAnimation = true;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     }, 50);
     setTimeout(() => {
       this.showNameAnimation = false;
       this.showNamePopup = true;
-      this.cdr.detectChanges();
+      this.cdr.markForCheck();
     }, 2000);
     try { localStorage.setItem('tc_name_submitted_v2', '1'); } catch {}
   }
 
   dismissNamePopup() {
     this.showNamePopup = false;
+  }
+
+  ngOnDestroy() {
+    this.isGenerating = false;
+    this.engine = null;
   }
 
   @HostListener('document:click', ['$event'])

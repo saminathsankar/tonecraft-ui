@@ -4,6 +4,43 @@ html {
   background-color: #020617;
   color: #f3f4f6;
 }
+
+/* === PREMIUM CUSTOM SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #a855f7, #ec4899);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #818cf8, #c084fc, #f472b6);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.5), 0 0 24px rgba(236, 72, 153, 0.3);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #4f46e5, #9333ea, #db2777);
+}
+
+::-webkit-scrollbar-corner {
+  background: #0f172a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #0f172a;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, isDevMode } from '@angular/core';
+import { Component, OnInit, OnDestroy, isDevMode, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { UserCountService } from '../services/user-count.service';
@@ -9,6 +9,7 @@ import { Subscription } from 'rxjs';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   liveCount = 0;
@@ -21,6 +22,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   constructor(
     private userCountService: UserCountService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -35,6 +37,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       if (this.displayedCount !== count) {
         this.animateCountUp();
       }
+      this.cdr.markForCheck();
     });
   }
 
@@ -49,6 +52,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
       this.displayedCount = Math.floor(start + (end - start) * eased);
+      this.cdr.markForCheck();
       if (progress < 1) {
         this.animFrame = requestAnimationFrame(step);
       }
